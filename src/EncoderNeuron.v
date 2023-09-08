@@ -30,7 +30,7 @@ module EncoderNeuron (
                     counter <= 0;
                 end else
                     counter <= counter + 1;
-            end else {
+            end else
                 if (counter == (N - 1) - lfsr[0]) begin
                     spikeOutput <= 1;
                     counter <= 0;
