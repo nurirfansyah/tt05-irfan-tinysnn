@@ -27,6 +27,7 @@ module SpikingNeuralNetwork (
     reg [7:0] last_spike_time;  
     reg [3:0] weights[7:0];     
     reg [2:0] output_neuron_timer[1:0]; 
+    reg [2:0] output_neuron_timer_next[1:0]; 
 
     integer i;
     integer j;
@@ -49,11 +50,12 @@ module SpikingNeuralNetwork (
 
             // Check for output spikes and adjust weights based on STDP
             for (j = 0; j < 2; j = j + 1) begin
+                output_neuron_timer_next[j] = output_neuron_timer[j];
                 if (output_neuron_timer[j] == STDP_WINDOW) begin
                     output_spikes[j] <= 0;
-                    output_neuron_timer[j] <= 0;
+                    output_neuron_timer_next[j] = 0;
                 end else if (output_neuron_timer[j] > 0) begin
-                    output_neuron_timer[j] <= output_neuron_timer[j] + 1;
+                    output_neuron_timer_next[j] = output_neuron_timer[j] + 1;
                 end
                 
                 // Basic SNN logic: sum the spikes weighted by the synaptic weights
@@ -73,9 +75,11 @@ module SpikingNeuralNetwork (
                 // If the sum exceeds a threshold, the output neuron fires
                 if (sum > (6 * MAX_WEIGHT / 10)) begin
                     output_spikes[j] <= 1;
-                    output_neuron_timer[j] <= 1;
+                    output_neuron_timer_next[j] = 1;
                 end
             end
+
+            output_neuron_timer[1:0] <= output_neuron_timer_next[1:0];
         end
     end
 
