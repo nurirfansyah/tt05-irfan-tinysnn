@@ -12,24 +12,27 @@ module tt_um_irfan_tinysnn (
     input  wire       rst_n     // reset_n - low to reset
 );
 
-    wire [7:0] encoded_spikes;
-    wire [1:0] snn_output;
+    // Since the SNN requires a reset signal that's active high, we'll invert the rst_n signal
+    wire reset = ~rst_n;
 
-    // Spiking Neural Network
+    wire [1:0] snn_output_spikes;
+
+    // Spiking Neural Network Instance
     SpikingNeuralNetwork snn (
         .clk(clk),
-        .reset(!rst_n),
-        .inputValue(ui_in),
-        .input_spikes(encoded_spikes),
-        .output_spikes(snn_output)
+        .reset(reset),
+        .rawInputValue(ui_in),
+        .output_spikes(snn_output_spikes)
     );
 
-    // Map the 2 SNN outputs to the first 2 bits of uo_out
-    assign uo_out[1:0] = snn_output;
-    assign uo_out[7:2] = 6'b101010; // Assigning the rest of the bits to 0 for this example.
+    // Here, I'm assuming that you want to display the output of the SNN on the 7-segment display.
+    // The two outputs from the SNN are used as the two least significant bits on the display.
+    // The remaining bits can be used as per your requirements.
 
-    // IO Pins - Placeholder logic, not connected to SNN for now
+    assign uo_out = {6'b0, snn_output_spikes};
+
+    // The IO configurations remain unchanged. You can modify them as required for your specific application.
     assign uio_out = uio_in;
-    assign uio_oe = 8'b11111111; // All set as outputs for this example.
+    assign uio_oe = 8'b11111111;  // This sets all IOs to be outputs. Adjust accordingly.
 
 endmodule
