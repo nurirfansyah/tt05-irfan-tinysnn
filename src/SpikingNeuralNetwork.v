@@ -20,23 +20,27 @@ module SpikingNeuralNetwork (
         end
     endgenerate
 
-    parameter STDP_WINDOW = 3'd3;  // Define the STDP time window
-    parameter MAX_WEIGHT = 4'd15;  // Maximum synaptic weight
-    parameter MIN_WEIGHT = 4'd0;   // Minimum synaptic weight
+    parameter STDP_WINDOW = 3'd3;  
+    parameter MAX_WEIGHT = 4'd15;  
+    parameter MIN_WEIGHT = 4'd0;   
 
-    reg [7:0] last_spike_time;  // Store the time of the last spike for each input neuron
-    reg [3:0] weights[7:0];     // Synaptic weights for each input neuron to the 2 output neurons
-    reg [2:0] output_neuron_timer[1:0]; // Timer to monitor the firing of the output neurons
+    reg [7:0] last_spike_time;  
+    reg [3:0] weights[7:0];     
+    reg [2:0] output_neuron_timer[1:0]; 
+
+    integer i;
+    integer j;
+    integer sum;
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
             output_spikes <= 2'b0;
             last_spike_time <= 8'b0;
-            weights[7:0] <= MAX_WEIGHT / 2;  // Initialize weights to half the maximum value
+            weights[7:0] <= MAX_WEIGHT / 2;  
             output_neuron_timer[1:0] <= 3'd0;
         end else begin
             // Check input spikes and update spike times
-            for (int i = 0; i < 8; i = i + 1) begin
+            for (i = 0; i < 8; i = i + 1) begin
                 if (encodedSpikes[i])
                     last_spike_time[i] <= 3'd0;
                 else if (last_spike_time[i] < 3'd7)
@@ -44,7 +48,7 @@ module SpikingNeuralNetwork (
             end
 
             // Check for output spikes and adjust weights based on STDP
-            for (int j = 0; j < 2; j = j + 1) begin
+            for (j = 0; j < 2; j = j + 1) begin
                 if (output_neuron_timer[j] == STDP_WINDOW) begin
                     output_spikes[j] <= 0;
                     output_neuron_timer[j] <= 0;
@@ -53,8 +57,8 @@ module SpikingNeuralNetwork (
                 end
                 
                 // Basic SNN logic: sum the spikes weighted by the synaptic weights
-                int sum = 0;
-                for (int i = 0; i < 8; i = i + 1) begin
+                sum = 0;
+                for (i = 0; i < 8; i = i + 1) begin
                     sum = sum + (encodedSpikes[i] ? weights[i] : 0);
 
                     // Adjust weights based on STDP rules
